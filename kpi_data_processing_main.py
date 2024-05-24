@@ -11,31 +11,56 @@ import mpld3
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
+import glob
+import os
 
 # import kpi_create_charts
 
 """create DataFrame obiect from excel files and prepare data for analysis"""
 
 # path to the excel files with data
-filename_rozliczenie_miesieczne = "D:/python_data/projekt/kpi/kpi_data/rozliczenie_miesieczne.xlsx"
+filename_rozliczenie_miesieczne = "rozliczenie_miesieczne_*.xlsx"
 filename_korekty = "D:/python_data/projekt/kpi/kpi_data/korekty.xlsx"
+filename_folder = "D:/python_data/projekt/kpi/kpi_data/"
 
-# upload "dane" sheet from rozliczenie_miesieczne excel file to DatFrame object
+# create list of excel files with data rozliczenie_miesieczne
+filename_paths = glob.glob(os.path.join(filename_folder, filename_rozliczenie_miesieczne))
+
+# create list for all dataframes from excel files
+data_frame_list = []
+
+# upload "dane" sheet from rozliczenie_miesieczne excel file to DatFrame object and put into the list data_frame_list
 # changing colums "NR.PRODUKCYJNY" on strings (dtype={'NR.PRODUKCYJNY': str})
 # remove first row from excel because have not needed informations (skiprows=1)
-df_rozliczenie_miesieczne = pd.read_excel(filename_rozliczenie_miesieczne, sheet_name="dane",dtype={'NR.PRODUKCYJNY': str} ,skiprows=1)
+for filename_path in filename_paths:
+    df = pd.read_excel(filename_path, sheet_name="dane", dtype={'NR.PRODUKCYJNY': str}, skiprows=1)
+    # searching last fulfill element in collumn "NR.PRODUKCYJNY"
+    last_index_rozliczenie_miesieczne = df['NR.PRODUKCYJNY'].last_valid_index()
+    # cut the DataFrame obiect on last fulfill element
+    df = df.iloc[:last_index_rozliczenie_miesieczne + 1, :36]
+    data_frame_list.append(df)
+
+# connecting all dataframes in one
+df_rozliczenie_miesieczne = pd.concat(data_frame_list, ignore_index=True)
+
+# # upload "dane" sheet from rozliczenie_miesieczne excel file to DatFrame object
+# # changing colums "NR.PRODUKCYJNY" on strings (dtype={'NR.PRODUKCYJNY': str})
+# # remove first row from excel because have not needed informations (skiprows=1)
+# df_rozliczenie_miesieczne = pd.read_excel(filename_rozliczenie_miesieczne, sheet_name="dane",dtype={'NR.PRODUKCYJNY': str} ,skiprows=1)
 
 # searching last fulfill element in collumn "NR.PRODUKCYJNY"
-last_index_rozliczenie_miesieczne = df_rozliczenie_miesieczne['NR.PRODUKCYJNY'].last_valid_index()
+# last_index_rozliczenie_miesieczne = df_rozliczenie_miesieczne['NR.PRODUKCYJNY'].last_valid_index()
 
 # cut the DataFrame obiect on last fulfill element
-df_rozliczenie_miesieczne = df_rozliczenie_miesieczne.iloc[:last_index_rozliczenie_miesieczne + 1, :36]
+# df_rozliczenie_miesieczne = df_rozliczenie_miesieczne.iloc[:last_index_rozliczenie_miesieczne + 1, :36]
+
 
 # designation columns which are needed for df_rozliczenie_miesieczne
-df_rozliczenie_miesieczne_needed_columns_for_kpi = [0, 10, 18, 23, 25]
+# df_rozliczenie_miesieczne_needed_columns_for_kpi = [0, 10, 18, 23, 25]
+df_rozliczenie_miesieczne_needed_columns_for_kpi = ['Lp', 'ilość ko-\nryg.mixów', 'NR.PRODUKCYJNY', 'INDEX', 'KONEC PRODUCJI']
 
 # create DataFrame obiect with collums needed for kpi analysis
-df_rozliczenie_miesieczne = df_rozliczenie_miesieczne.iloc[:, df_rozliczenie_miesieczne_needed_columns_for_kpi]
+df_rozliczenie_miesieczne = df_rozliczenie_miesieczne.loc[:, df_rozliczenie_miesieczne_needed_columns_for_kpi]
 
 # change data type for date in column 3
 df_rozliczenie_miesieczne.iloc[:, 4] = pd.to_datetime(df_rozliczenie_miesieczne.iloc[:, 4],dayfirst=True)
@@ -60,11 +85,12 @@ last_index_korekty = df_korekty['index'].last_valid_index()
 # cut the DataFrame obiect on last fulfill element
 df_korekty = df_korekty.iloc[:last_index_korekty + 1, :18]
 
-# designation columns which are needed for df_korekty
-df_korekty_needed_columns_for_kpi = [2, 3, 4]
+# # designation columns which are needed for df_korekty
+# df_korekty_needed_columns_for_kpi = [2, 3, 4]
+df_korekty_needed_columns_for_kpi = ['index', 'Nr partii', 'Data kontroli']
 
 # create DataFrame obiect with collums needed for kpi analysis
-df_korekty = df_korekty.iloc[:, df_korekty_needed_columns_for_kpi]
+df_korekty = df_korekty.loc[:, df_korekty_needed_columns_for_kpi]
 
 # change data type for date in column 2
 df_korekty.iloc[:, 2] = pd.to_datetime(df_korekty.iloc[:, 2],dayfirst=True)
