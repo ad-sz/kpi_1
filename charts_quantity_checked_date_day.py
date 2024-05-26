@@ -37,33 +37,40 @@ def chart_date(filename_checked_date, target_date):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     fig.add_trace(
-        go.Bar(x=df_date_counts['date'], y=df_date_counts['quantity'], 
-            name='Ilość wykonanych sprawdzeń', marker=dict(color='blue'), hovertemplate='%{y:.1f}'),
+        go.Bar(
+            x=df_date_counts['date'], 
+            y=df_date_counts['quantity'], 
+            name='Ilość wykonanych sprawdzeń', 
+            marker=dict(color='blue'), 
+            hovertemplate='%{y:.1f}',
+            text=df_date_counts['percentage_of_goal'].apply(lambda x: f'{x:.1f}%'),  # adding percentage text
+            textposition='outside',  # position text outside the bars
+        ),
         secondary_y=False,
     )
 
     fig.add_trace(
-        go.Scatter(x=df_date_counts['date'], y=[target_date]*len(df_date_counts), 
-                mode='lines', name='Cel', line=dict(color='red', dash='dash'), hovertemplate='%{y:.1f}'),
+        go.Scatter(
+            x=df_date_counts['date'], 
+            y=[target_date]*len(df_date_counts), 
+            mode='lines', 
+            name='Cel', 
+            line=dict(color='red', dash='dash'), 
+            hovertemplate='%{y:.1f}'
+        ),
         secondary_y=False,
-    )
-
-    fig.add_trace(
-        go.Bar(x=df_date_counts['date'], y=df_date_counts['percentage_of_goal'], 
-            name='Procent realizacji celu', marker=dict(color='green'), hovertemplate='%{y:.1f}%'),
-        secondary_y=True,
     )
 
     fig.update_layout(
         title='Ilość wykonanych korekt i procent realizacji celu w tygodniach',
-        xaxis_title='Tydzień',
+        xaxis_title='Dzień',
         yaxis_title='Ilość wykonanych korekt',
         yaxis2_title='Procent realizacji celu',
-        barmode='group'  # group bars together
+        barmode='group',  # group bars together
     )
 
     fig.update_xaxes(
-        dtick='W1',  # set x-axis to increment dately
+        dtick='W1',  # set x-axis to increment dayly
     )
 
     fig.update_yaxes(

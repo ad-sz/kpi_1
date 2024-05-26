@@ -12,30 +12,23 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 import filenames
 
-target_date = 9
-target_week = 30
-target_month = 180
+target_accuracy = 50
 
-
-def chart_week(filename_checked_week, target_week):
+def chart_week(filename_accuracy_week, target_week):
     # open csv file with needed data and create dataframe
-    df_week_counts = pd.read_csv(filename_checked_week, sep=';')
-    
-    # adding collumn with % of target
-    df_week_counts['percentage_of_goal'] = (df_week_counts['quantity'] / target_week) * 100
-
+    df_week_accuracy = pd.read_csv(filename_accuracy_week, sep=';')
 
     # create chart
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig = make_subplots(specs=[[{"secondary_y": False}]])
 
     fig.add_trace(
         go.Bar(
-            x=df_week_counts['week'], 
-            y=df_week_counts['quantity'], 
-            name='Ilość wykonanych sprawdzeń', 
+            x=df_week_accuracy['week'], 
+            y=df_week_accuracy['accuracy'], 
+            name='procent skuteczności korekt', 
             marker=dict(color='blue'), 
             hovertemplate='%{y:.1f}',
-            text=df_week_counts['percentage_of_goal'].apply(lambda x: f'{x:.1f}%'),  # adding percentage text
+            text=df_week_accuracy['accuracy'].apply(lambda x: f'{x:.1f}%'),  # adding percentage text
             textposition='outside',  # position text outside the bars
         ),
         secondary_y=False,
@@ -43,8 +36,8 @@ def chart_week(filename_checked_week, target_week):
 
     fig.add_trace(
         go.Scatter(
-            x=df_week_counts['week'], 
-            y=[target_week]*len(df_week_counts), 
+            x=df_week_accuracy['week'], 
+            y=[target_accuracy]*len(df_week_accuracy), 
             mode='lines', 
             name='Cel', 
             line=dict(color='red', dash='dash'), 
@@ -54,10 +47,9 @@ def chart_week(filename_checked_week, target_week):
     )
 
     fig.update_layout(
-        title='Ilość wykonanych korekt i procent realizacji celu w tygodniach',
+        title='Procent skuteczności korekt',
         xaxis_title='Tydzień',
-        yaxis_title='Ilość wykonanych korekt',
-        yaxis2_title='Procent realizacji celu',
+        yaxis_title='Procent skuteczności korekt',
         barmode='group',  # group bars together
     )
 
@@ -66,17 +58,12 @@ def chart_week(filename_checked_week, target_week):
     )
 
     fig.update_yaxes(
-        dtick=2,  # set left y-axis to increment by 2
+        dtick=5,  # set left y-axis to increment by 5
         secondary_y=False
     )
 
-    fig.update_yaxes(
-        dtick=5,  # set right y-axis to increment by 5
-        secondary_y=True
-    )
-
     # fig.show()
-    fig.write_html(filenames.filename_chart_week)
+    fig.write_html(filenames.filename_chart_accuracy_week)
     
 
-chart_week(filenames.filename_checked_week, target_week)
+chart_week(filenames.filename_accuracy_week, target_accuracy)
