@@ -17,7 +17,7 @@ import filenames
 
 def quantity_checked (filename_korekty):
     # open excel file with needed data and create dataframe
-    df_korekty = pd.read_excel(filenames.filename_korekty, sheet_name="Premix",dtype={'Nr partii': str}, skiprows=1)
+    df_korekty = pd.read_excel(filename_korekty, sheet_name="Premix",dtype={'Nr partii': str}, skiprows=1)
 
     # searching last fulfill element in collumn "index"
     last_index_korekty = df_korekty['index'].last_valid_index()
